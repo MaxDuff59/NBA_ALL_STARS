@@ -217,9 +217,25 @@
         .particle {
             animation: particleFloat 3s ease-out infinite;
         }
+
+        .title {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: 12px;
+            z-index: 100;
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
+    <div class="title">NBA All Stars</div>
     <div id="container"></div>
     <div class="tooltip"></div>
 
@@ -419,31 +435,6 @@
                 .duration(600)
                 .delay((d, i) => i * 20)
                 .style('opacity', 1);
-
-            // Ajouter des particules scintillantes autour de LeBron
-            const lebronData = players.find(p => p.player === 'LeBron James');
-            if (lebronData) {
-                const particleGroup = svg.append('g')
-                    .attr('transform', `translate(${lebronData.x}, ${lebronData.y})`)
-                    .attr('class', 'lebron-particles');
-
-                // Créer 16 particules qui orbitent autour de LeBron
-                for (let i = 0; i < 16; i++) {
-                    const angle = (i / 16) * Math.PI * 2;
-                    const distance = sizeScale(lebronData.selections) + 30;
-                    
-                    particleGroup.append('circle')
-                        .attr('class', 'particle')
-                        .attr('cx', 0)
-                        .attr('cy', 0)
-                        .attr('r', 2.5)
-                        .attr('fill', i % 2 === 0 ? '#FFD700' : '#FFA500')
-                        .attr('opacity', 0)
-                        .style('--tx', `${Math.cos(angle) * distance}px`)
-                        .style('--ty', `${Math.sin(angle) * distance}px`)
-                        .style('animation-delay', `${i * 0.2}s`);
-                }
-            }
 
         }).catch(function(error) {
             console.error('Erreur lors du chargement du fichier CSV:', error);
