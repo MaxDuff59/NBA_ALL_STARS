@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA All-Star Selections</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000000;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            margin: 0;
+        }
+        
+        .star {
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .star:hover {
+            opacity: 0.8;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+            z-index: 1000;
+        }
+        
+        .tooltip.visible {
+            opacity: 1;
+        }
+        
+        .tooltip .player-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .tooltip .selections {
+            color: #666;
+        }
+
+        @keyframes lebronPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        @keyframes lebronGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 5px #FFD700) drop-shadow(0 0 10px #FFA500) drop-shadow(0 0 15px #FF8C00);
+            }
+            50% {
+                filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FFA500) drop-shadow(0 0 30px #FF8C00) drop-shadow(0 0 40px #FF6347);
+            }
+        }
+
+        .lebron-star {
+            animation: lebronGlow 2s ease-in-out infinite;
+        }
+
+        .lebron-star path {
+            animation: lebronPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(1);
+            }
+        }
+
+        .particle {
+            animation: particleFloat 3s ease-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div class="tooltip"></div>
+
+    <script>
+        // Configuration dynamique basée sur la taille de l'écran
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Création du SVG
+        const svg = d3.select('#container')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Fonction pour créer un chemin d'étoile
+        function starPath(size) {
+            const points = 5;
+            const outerRadius = size;
+            const innerRadius = size * 0.4;
+            let path = '';
+            
+            for (let i = 0; i < points * 2; i++) {
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const angle = (Math.PI * i) / points - Math.PI / 2;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                path += (i === 0 ? 'M' : 'L') + x + ',' + y;
+            }
+            path += 'Z';
+            return path;
+        }
+
+        // Charger les données depuis le fichier CSV
+        d3.csv('nba_allstar.csv').then(function(data) {
+            
+            // Parser les données
+            const players = data.map(d => ({
+                player: d.Player,
+                selections: +d.Selections,
+                years: d.Years
+            }));
+
+            // Échelle pour la taille des étoiles (échelle exponentielle pour accentuer les différences)
+            const sizeScale = d3.scalePow()
+                .exponent(2.5)
+                .domain([0, d3.max(players, d => d.selections)])
+                .range([2, 20]);
+
+            // Échelle de couleur pour un effet dégradé doré
+            const colorScale = d3.scaleLinear()
+                .domain([0, d3.max(players, d => d.selections)])
+                .range(['#FFD700', '#FFFFFF']);
+
+            // Initialiser les positions aléatoirement sur tout l'écran
+            players.forEach(d => {
+                d.x = Math.random() * width;
+                d.y = Math.random() * height;
+            });
+
+            // Simulation de force pour éviter les chevauchements tout en gardant la répartition rectangulaire
+            const simulation = d3.forceSimulation(players)
+                .force('charge', d3.forceManyBody().strength(5))
+                .force('collision', d3.forceCollide().radius(d => sizeScale(d.selections) + 12))
+                .force('x', d3.forceX(d => d.x).strength(0.1))
+                .force('y', d3.forceY(d => d.y).strength(0.1))
+                .force('bounds', () => {
+                    players.forEach(d => {
+                        const radius = sizeScale(d.selections) + 5;
+                        d.x = Math.max(radius, Math.min(width - radius, d.x));
+                        d.y = Math.max(radius, Math.min(height - radius, d.y));
+                    });
+                })
+                .stop();
+
+            // Exécuter la simulation pour disperser les étoiles
+            for (let i = 0; i < 300; i++) simulation.tick();
+
+            // Tooltip
+            const tooltip = d3.select('.tooltip');
+
+            // Ajouter un glow effect standard
+            const defs = svg.append('defs');
+            
+            const filter = defs.append('filter')
+                .attr('id', 'glow');
+            
+            filter.append('feGaussianBlur')
+                .attr('stdDeviation', '1.5')
+                .attr('result', 'coloredBlur');
+            
+            const feMerge = filter.append('feMerge');
+            feMerge.append('feMergeNode')
+                .attr('in', 'coloredBlur');
+            feMerge.append('feMergeNode')
+                .attr('in', 'SourceGraphic');
+
+            // Créer les étoiles
+            const stars = svg.selectAll('.star')
+                .data(players)
+                .enter()
+                .append('g')
+                .attr('class', d => d.player === 'LeBron James' ? 'star lebron-star' : 'star')
+                .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                .on('mouseenter', function(event, d) {
+                    tooltip
+                        .html(`
+                            <div class="player-name">${d.player}</div>
+                            <div class="selections">${d.selections} sélections All-Star</div>
+                            <div class="selections">${d.years}</div>
+                        `)
+                        .style('left', (event.pageX + 15) + 'px')
+                        .style('top', (event.pageY - 30) + 'px')
+                        .classed('visible', true);
+                })
+                .on('mousemove', function(event) {
+                    tooltip
+                        .style('left', (event.pageX + 15) + 'px')
+                        .style('top', (event.pageY - 30) + 'px');
+                })
+                .on('mouseleave', function() {
+                    tooltip.classed('visible', false);
+                });
+
+            // Dessiner les étoiles
+            stars.append('path')
+                .attr('d', d => starPath(sizeScale(d.selections)))
+                .attr('fill', d => d.player === 'LeBron James' ? '#FFD700' : colorScale(d.selections))
+                .attr('stroke', d => d.player === 'LeBron James' ? '#FFA500' : '#FFFFFF')
+                .attr('stroke-width', d => d.player === 'LeBron James' ? 2 : 0.5)
+                .attr('filter', 'url(#glow)')
+                .style('opacity', 0)
+                .transition()
+                .duration(600)
+                .delay((d, i) => i * 20)
+                .style('opacity', 1);
+
+            // Ajouter des particules scintillantes autour de LeBron
+            const lebronData = players.find(p => p.player === 'LeBron James');
+            if (lebronData) {
+                const particleGroup = svg.append('g')
+                    .attr('transform', `translate(${lebronData.x}, ${lebronData.y})`)
+                    .attr('class', 'lebron-particles');
+
+                // Créer 16 particules qui orbitent autour de LeBron
+                for (let i = 0; i < 16; i++) {
+                    const angle = (i / 16) * Math.PI * 2;
+                    const distance = sizeScale(lebronData.selections) + 30;
+                    
+                    particleGroup.append('circle')
+                        .attr('class', 'particle')
+                        .attr('cx', 0)
+                        .attr('cy', 0)
+                        .attr('r', 2.5)
+                        .attr('fill', i % 2 === 0 ? '#FFD700' : '#FFA500')
+                        .attr('opacity', 0)
+                        .style('--tx', `${Math.cos(angle) * distance}px`)
+                        .style('--ty', `${Math.sin(angle) * distance}px`)
+                        .style('animation-delay', `${i * 0.2}s`);
+                }
+            }
+
+        }).catch(function(error) {
+            console.error('Erreur lors du chargement du fichier CSV:', error);
+            alert('Impossible de charger le fichier nba_allstar.csv. Vérifiez que le fichier est dans le même dossier que le HTML.');
+        });
+    </script>
+</body>
+</html>
