@@ -38,30 +38,140 @@
         
         .tooltip {
             position: absolute;
-            background-color: rgba(255, 255, 255, 0.95);
-            color: #000;
-            padding: 10px 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 0;
+            border-radius: 16px;
             font-size: 14px;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.3s ease;
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 
+                        0 0 0 1px rgba(255, 215, 0, 0.2),
+                        0 0 20px rgba(255, 215, 0, 0.1);
             z-index: 1000;
+            min-width: 280px;
+            overflow: hidden;
+            transform: translateY(10px);
         }
         
         .tooltip.visible {
             opacity: 1;
+            transform: translateY(0);
         }
         
-        .tooltip .player-name {
+        .tooltip-header {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tooltip-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .tooltip-photo-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            background: #fff;
+        }
+        
+        .tooltip-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .tooltip-photo-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
+            color: white;
         }
         
-        .tooltip .selections {
-            color: #666;
+        .player-name {
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            color: #000;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+        
+        .tooltip-body {
+            padding: 15px;
+        }
+        
+        .stat-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid #FFD700;
+        }
+        
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 8px;
+            font-size: 18px;
+        }
+        
+        .stat-content {
+            flex: 1;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .years-value {
+            color: #fff;
+            font-size: 13px;
         }
 
         @keyframes lebronPulse {
@@ -114,6 +224,34 @@
     <div class="tooltip"></div>
 
     <script>
+        // Mapping des photos des joueurs (URLs des photos NBA)
+        const playerPhotos = {
+            'LeBron James': 'https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png',
+            'Kareem Abdul-Jabbar': 'https://cdn.nba.com/headshots/nba/latest/1040x760/76003.png',
+            'Kobe Bryant': 'https://cdn.nba.com/headshots/nba/latest/1040x760/977.png',
+            'Tim Duncan': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1495.png',
+            'Shaquille O\'Neal': 'https://cdn.nba.com/headshots/nba/latest/1040x760/406.png',
+            'Kevin Durant': 'https://cdn.nba.com/headshots/nba/latest/1040x760/201142.png',
+            'Michael Jordan': 'https://cdn.nba.com/headshots/nba/latest/1040x760/893.png',
+            'Karl Malone': 'https://cdn.nba.com/headshots/nba/latest/1040x760/252.png',
+            'Dirk Nowitzki': 'https://cdn.nba.com/headshots/nba/latest/1040x760/1717.png',
+            'Wilt Chamberlain': 'https://cdn.nba.com/headshots/nba/latest/1040x760/76375.png',
+            'Kevin Garnett': 'https://cdn.nba.com/headshots/nba/latest/1040x760/708.png',
+            'Jerry West': 'https://cdn.nba.com/headshots/nba/latest/1040x760/77160.png',
+            'Bob Cousy': 'https://cdn.nba.com/headshots/nba/latest/1040x760/76393.png',
+            'Stephen Curry': 'https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png',
+            'Julius Erving': 'https://cdn.nba.com/headshots/nba/latest/1040x760/76505.png',
+            'Moses Malone': 'https://cdn.nba.com/headshots/nba/latest/1040x760/76484.png',
+            'Hakeem Olajuwon': 'https://cdn.nba.com/headshots/nba/latest/1040x760/165.png',
+            'Dwyane Wade': 'https://cdn.nba.com/headshots/nba/latest/1040x760/2548.png',
+            'Bob Pettit': 'https://cdn.nba.com/headshots/nba/latest/1040x760/77274.png',
+            'Elgin Baylor': 'https://cdn.nba.com/headshots/nba/latest/1040x760/76135.png'
+        };
+
+        function getPlayerInitials(name) {
+            return name.split(' ').map(n => n[0]).join('');
+        }
+
         // Configuration dynamique basée sur la taille de l'écran
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -165,21 +303,33 @@
 
             // Initialiser les positions aléatoirement sur tout l'écran
             players.forEach(d => {
-                d.x = Math.random() * width;
-                d.y = Math.random() * height;
+                if (d.player === 'LeBron James') {
+                    // LeBron est toujours au centre
+                    d.x = width / 2;
+                    d.y = height / 2;
+                } else {
+                    d.x = Math.random() * width;
+                    d.y = Math.random() * height;
+                }
             });
 
             // Simulation de force pour éviter les chevauchements tout en gardant la répartition rectangulaire
             const simulation = d3.forceSimulation(players)
                 .force('charge', d3.forceManyBody().strength(5))
                 .force('collision', d3.forceCollide().radius(d => sizeScale(d.selections) + 12))
-                .force('x', d3.forceX(d => d.x).strength(0.1))
-                .force('y', d3.forceY(d => d.y).strength(0.1))
+                .force('x', d3.forceX(d => d.player === 'LeBron James' ? width / 2 : d.x).strength(d => d.player === 'LeBron James' ? 1 : 0.1))
+                .force('y', d3.forceY(d => d.player === 'LeBron James' ? height / 2 : d.y).strength(d => d.player === 'LeBron James' ? 1 : 0.1))
                 .force('bounds', () => {
                     players.forEach(d => {
                         const radius = sizeScale(d.selections) + 5;
-                        d.x = Math.max(radius, Math.min(width - radius, d.x));
-                        d.y = Math.max(radius, Math.min(height - radius, d.y));
+                        if (d.player === 'LeBron James') {
+                            // LeBron reste fixé au centre
+                            d.x = width / 2;
+                            d.y = height / 2;
+                        } else {
+                            d.x = Math.max(radius, Math.min(width - radius, d.x));
+                            d.y = Math.max(radius, Math.min(height - radius, d.y));
+                        }
                     });
                 })
                 .stop();
@@ -214,11 +364,35 @@
                 .attr('class', d => d.player === 'LeBron James' ? 'star lebron-star' : 'star')
                 .attr('transform', d => `translate(${d.x}, ${d.y})`)
                 .on('mouseenter', function(event, d) {
+                    const photoUrl = playerPhotos[d.player];
+                    const photoHtml = photoUrl 
+                        ? `<img src="${photoUrl}" class="tooltip-photo" onerror="this.parentElement.innerHTML='<div class=\\'tooltip-photo-placeholder\\'>${getPlayerInitials(d.player)}</div>'">`
+                        : `<div class="tooltip-photo-placeholder">${getPlayerInitials(d.player)}</div>`;
+                    
                     tooltip
                         .html(`
-                            <div class="player-name">${d.player}</div>
-                            <div class="selections">${d.selections} sélections All-Star</div>
-                            <div class="selections">${d.years}</div>
+                            <div class="tooltip-header">
+                                <div class="tooltip-photo-container">
+                                    ${photoHtml}
+                                </div>
+                                <div class="player-name">${d.player}</div>
+                            </div>
+                            <div class="tooltip-body">
+                                <div class="stat-row">
+                                    <div class="stat-icon">⭐</div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">All-Star Selections</div>
+                                        <div class="stat-value">${d.selections}</div>
+                                    </div>
+                                </div>
+                                <div class="stat-row">
+                                    <div class="stat-icon">📅</div>
+                                    <div class="stat-content">
+                                        <div class="stat-label">Années</div>
+                                        <div class="years-value">${d.years}</div>
+                                    </div>
+                                </div>
+                            </div>
                         `)
                         .style('left', (event.pageX + 15) + 'px')
                         .style('top', (event.pageY - 30) + 'px')
