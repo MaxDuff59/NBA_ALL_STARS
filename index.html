@@ -218,6 +218,32 @@
             animation: particleFloat 3s ease-out infinite;
         }
 
+        @keyframes star2026Glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 3px #FFD700) drop-shadow(0 0 6px #FFA500);
+            }
+            50% {
+                filter: drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 12px #FFA500) drop-shadow(0 0 18px #FF8C00);
+            }
+        }
+
+        @keyframes star2026Pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
+        .star-2026 {
+            animation: star2026Glow 3s ease-in-out infinite;
+        }
+
+        .star-2026 path {
+            animation: star2026Pulse 3s ease-in-out infinite;
+        }
+
         .title {
             position: absolute;
             top: 40px;
@@ -268,6 +294,11 @@
             return name.split(' ').map(n => n[0]).join('');
         }
 
+        // Fonction pour vérifier si un joueur a été sélectionné en 2026
+        function isSelected2026(yearsString) {
+            return yearsString.includes('2026');
+        }
+
         // Configuration dynamique basée sur la taille de l'écran
         const width = window.innerWidth;
         const height = window.innerHeight;
@@ -303,7 +334,8 @@
             const players = data.map(d => ({
                 player: d.Player,
                 selections: +d.Selections,
-                years: d.Years
+                years: d.Years,
+                selected2026: isSelected2026(d.Years)
             }));
 
             // Échelle pour la taille des étoiles (échelle exponentielle pour accentuer les différences)
@@ -372,12 +404,16 @@
             feMerge.append('feMergeNode')
                 .attr('in', 'SourceGraphic');
 
-            // Créer les étoiles
+            // Créer les étoiles avec la classe appropriée
             const stars = svg.selectAll('.star')
                 .data(players)
                 .enter()
                 .append('g')
-                .attr('class', d => d.player === 'LeBron James' ? 'star lebron-star' : 'star')
+                .attr('class', d => {
+                    if (d.player === 'LeBron James') return 'star lebron-star';
+                    if (d.selected2026) return 'star star-2026';
+                    return 'star';
+                })
                 .attr('transform', d => `translate(${d.x}, ${d.y})`)
                 .on('mouseenter', function(event, d) {
                     const photoUrl = playerPhotos[d.player];
