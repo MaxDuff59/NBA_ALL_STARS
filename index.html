@@ -38,21 +38,23 @@
         
         .tooltip {
             position: absolute;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            padding: 0;
-            border-radius: 16px;
+            background: #ffffff;
+            color: #000;
+            padding: 20px;
+            border-radius: 24px;
             font-size: 14px;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), 
-                        0 0 0 1px rgba(255, 215, 0, 0.2),
-                        0 0 20px rgba(255, 215, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-            min-width: 280px;
+            min-width: 480px;
             overflow: hidden;
             transform: translateY(10px);
+            border: 3px solid #000;
+            display: flex;
+            gap: 20px;
+            align-items: center;
         }
         
         .tooltip.visible {
@@ -60,39 +62,21 @@
             transform: translateY(0);
         }
         
-        .tooltip-header {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            padding: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .tooltip-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: rotate(45deg);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        .tooltip-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
         
         .tooltip-photo-container {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             overflow: hidden;
-            border: 3px solid rgba(255, 255, 255, 0.9);
-            margin: 0 auto 10px;
+            border: 4px solid #1a5b7d;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            background: #fff;
+            background: #1a5b7d;
         }
         
         .tooltip-photo {
@@ -104,74 +88,55 @@
         .tooltip-photo-placeholder {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a5b7d;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 48px;
             font-weight: bold;
             color: white;
         }
         
         .player-name {
             font-weight: bold;
-            font-size: 18px;
+            font-size: 20px;
             text-align: center;
             color: #000;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
         }
         
-        .tooltip-body {
-            padding: 15px;
-        }
-        
-        .stat-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            border-left: 3px solid #FFD700;
-        }
-        
-        .stat-row:last-child {
-            margin-bottom: 0;
-        }
-        
-        .stat-icon {
-            width: 32px;
-            height: 32px;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            border-radius: 8px;
-            font-size: 18px;
-        }
-        
-        .stat-content {
+        .tooltip-right {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
         }
         
-        .stat-label {
-            font-size: 11px;
-            color: #aaa;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
-        }
-        
-        .stat-value {
-            font-size: 16px;
+        .allstar-title {
             font-weight: bold;
-            color: #FFD700;
+            font-size: 18px;
+            text-align: center;
         }
         
-        .years-value {
-            color: #fff;
-            font-size: 13px;
+        .stars-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-width: 320px;
+            justify-content: center;
+        }
+        
+        .star-icon {
+            font-size: 26px;
+            width: 26px;
+            text-align: center;
+        }
+        
+        .years-display {
+            font-size: 16px;
+            font-weight: normal;
+            color: #000;
+            text-align: center;
         }
 
         @keyframes lebronPulse {
@@ -246,17 +211,20 @@
 
         .title {
             position: absolute;
-            top: 40px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 48px;
-            font-weight: 300;
-            color: #ffffff;
-            letter-spacing: 12px;
+            font-size: 56px;
+            font-weight: 700;
+            color: #FFD700;
+            letter-spacing: 8px;
             z-index: 100;
-            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-family: 'Georgia', 'Times New Roman', serif;
             text-transform: uppercase;
-            opacity: 0.9;
+            opacity: 1;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+                         0 0 40px rgba(255, 215, 0, 0.4),
+                         0 4px 8px rgba(0, 0, 0, 0.8);
         }
     </style>
 </head>
@@ -421,29 +389,29 @@
                         ? `<img src="${photoUrl}" class="tooltip-photo" onerror="this.parentElement.innerHTML='<div class=\\'tooltip-photo-placeholder\\'>${getPlayerInitials(d.player)}</div>'">`
                         : `<div class="tooltip-photo-placeholder">${getPlayerInitials(d.player)}</div>`;
                     
+                    // Générer les étoiles
+                    let starsHtml = '';
+                    for (let i = 0; i < d.selections; i++) {
+                        starsHtml += '<span class="star-icon">⭐</span>';
+                    }
+                    
+                    // Extraire la première et dernière année
+                    const years = d.years.split(',').map(y => y.trim());
+                    
                     tooltip
                         .html(`
-                            <div class="tooltip-header">
+                            <div class="tooltip-left">
                                 <div class="tooltip-photo-container">
                                     ${photoHtml}
                                 </div>
                                 <div class="player-name">${d.player}</div>
                             </div>
-                            <div class="tooltip-body">
-                                <div class="stat-row">
-                                    <div class="stat-icon">⭐</div>
-                                    <div class="stat-content">
-                                        <div class="stat-label">All-Star Selections</div>
-                                        <div class="stat-value">${d.selections}</div>
-                                    </div>
+                            <div class="tooltip-right">
+                                <div class="allstar-title">All-Star appearances (${d.selections})</div>
+                                <div class="stars-display">
+                                    ${starsHtml}
                                 </div>
-                                <div class="stat-row">
-                                    <div class="stat-icon">📅</div>
-                                    <div class="stat-content">
-                                        <div class="stat-label">Années</div>
-                                        <div class="years-value">${d.years}</div>
-                                    </div>
-                                </div>
+                                <div class="years-display">${years}</div>
                             </div>
                         `)
                         .style('left', (event.pageX + 15) + 'px')
